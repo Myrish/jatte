@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>jatte</title>
+        <!-- lib scripts -->
+        <!-- styles -->
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="lib/dejavu.strict.js"></script>
+        <script src="jatte.start.js"></script>
+        <script src="common.js"></script>
+        <script src="Scope.js"></script>
+        <script src="Node.js"></script>
+        <script src="Macro.js"></script>
+        <script src="TextParser.js"></script>
+        <script src="DOMCompiler.js"></script>
+        <script src="Template.js"></script>
+        <script src="jatte.defaultMacros.js"></script>
+        <script src="jatte.end.js"></script>
+        <script>
+            var template = null;
+            $(document).ready(function() {
+                var text = document.getElementById('text');
+
+                jatte.Template.registerMacro(jatte.MacroRepeat);
+                jatte.Template.registerMacro(jatte.MacroPrint);
+                jatte.Template.registerMacro(jatte.MacroIf);
+                jatte.Template.registerMacro({name:"macro"});
+                template = new jatte.Template(document.body);
+                template.scope.position = { line: 1, column: 2 };
+                template.scope.show = true;
+                template.scope.issues = [
+                    {message:"message 1", position: {line: 1, column: 2}},
+                    {message:"message 2", position: {line: 3, column: 4}},
+                    {message:"message 3", position: {line: 5, column: 6}},
+                    {message:"message 4", position: {line: 7, column: 8}}
+                ];
+                template.render();
+                /*template.update();
+                template.scope.show = false;
+                template.update();
+                template.scope.show = true;
+                template.scope.position.line = 10;
+                template.update();*/
+                //template.scope.showToolbar = true;
+                //template.update();
+            });
+
+            function toggle() {
+                template.scope.show = ! template.scope.show;
+                template.scope.position.line = Math.floor(Math.random() * 100);
+                template.update();
+            };
+
+            function synchro() {
+                template.scope.text = text.value;
+                template.update();
+            }
+
+            function addItem() {
+                template.scope.issues.push({
+                    message: "message 10",
+                    position: {line: 10, column: 10},
+                    list: [1,2,3]
+                });
+                template.update();
+            }
+
+            function removeItem() {
+                template.scope.issues.pop();
+                template.update();
+            }
+        </script>
+	</head>
+	<body>
+        <button onclick="toggle();">toggle</button>
+        <button onclick="addItem();">add</button>
+        <button onclick="removeItem();">remove</button>
+        <textarea id="text" onkeyup="synchro();"></textarea>
+        <div>{text}</div>
+        <header>Zpěvníkář</header>
+        <div id="content">
+            <div id="editor">
+                {#if show}
+                <div class="tool-bar">toolbar</div>
+                <div class="text">text</div>
+                <div class="status-bar">
+                    <span class="cursor-position">
+                        line <span class="line">{position.line}</span>,
+                        column <span class="column">{position.column}</span>
+                    </span>
+                </div>
+                {/if}
+                <div class="issues-panel {#if empty(issues)}hidden{/if}">
+                    <div class="content">
+                        {#repeat issues}
+                        <div class="issue {issueHighlightClass($item)}" onclick="highlightIssue($item)">
+                            issue
+                            <span class="type"><div class="sign {$item.type}"></div></span>
+                            <span class="message">{$item.message}</span>
+                            <span class="position">line {$item.position.line}, column {$item.position.column}</span>
+                            {#repeat $item.list}
+                                {$item}<br />
+                            {/repeat}
+                        </div>
+                        {/repeat}
+                    </div>
+                    {#macro param /}
+                </div>
+            </div>
+
+            <div id="viewer">
+                <div class="tool-bar">toolbar</div>
+                <div class="content">
+                    <div class="song">
+                        <div class="paper" data-repeat="page in pages">
+                            <div class="page">
+                                <div class="content">
+                                    <div class="title" data-if="first($index)">{song.title}</div>
+                                    <div class="author" data-if="first($index)">{song.author}</div>
+                                    <div class="capo" data-if="showCapo($index)">capo {song.capo}</div>
+                                    <div class="sections">
+                                        <div class="section" data-repeat="section in page.sections" on-last-load="lastSectionLoaded">
+                                            <div class="line {:lineChordsClass(line)}" data-repeat="line in section.lines">
+                                                <span class="label" data-if="first($index)">
+                                                    <span class="text">{section.label}</span>
+                                                    <span class="number" data-if="section.number">{section.number}</span>
+                                                    .
+                                                </span>
+                                                <span class="lyrics">{line.lyrics}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="original-text">Take me home, country roads (Denver, John) ...</div>
+            </div>
+        </div>
+        <footer>Patička</footer>
+        <!-- app scripts -->
+	</body>
+</html>
+

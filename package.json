@@ -1,0 +1,9 @@
+{
+    "name": "jatte",
+    "version": "0.0.0",
+    "devDependencies": {
+        "pegjs": "",
+        "uglify-js": ""
+    },
+    "dependencies": {}
+}
